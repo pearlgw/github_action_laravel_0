@@ -7,7 +7,6 @@ ENV HOST_GID=1000 \
 RUN groupmod -g $HOST_GID www-data && \
     usermod -u $HOST_UID www-data
 
-
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -34,16 +33,26 @@ RUN pecl install -o -f redis &&  rm -rf /tmp/pear && docker-php-ext-enable redis
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-COPY --chown=www-data:www-data . /var/www/
+# Pindah ke folder aplikasi
+WORKDIR /var/www
+
+# Copy file Composer terlebih dahulu agar caching optimal
+COPY composer.json composer.lock /var/www/
+
+# Jalankan Composer Install
+RUN composer install --no-interaction --no-dev --optimize-autoloader
+
+# Copy seluruh project
+COPY . /var/www/
+
+# Ubah kepemilikan file
 RUN chown -R www-data:www-data /var/www
+
+# Pastikan direktori yang butuh izin dapat diakses
+RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache /var/www/vendor
 
 # Ganti user ke www-data
 USER www-data
-
-# Install dependency
-WORKDIR /var/www
-
-RUN composer install
 
 # Expose port 9000
 EXPOSE 9000
