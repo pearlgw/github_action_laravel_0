@@ -36,13 +36,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 # Pindah ke folder aplikasi
 WORKDIR /var/www
 
-# Copy file Composer terlebih dahulu agar caching optimal
-COPY composer.json composer.lock /var/www/
-
-# Jalankan Composer Install
-RUN composer install --no-interaction --no-dev --optimize-autoloader
-
-# Copy seluruh project
+# Copy seluruh project (agar tidak overwrite hasil composer install nanti)
 COPY . /var/www/
 
 # Ubah kepemilikan file
@@ -56,3 +50,6 @@ USER www-data
 
 # Expose port 9000
 EXPOSE 9000
+
+# Jalankan Composer Install saat container berjalan
+CMD ["sh", "-c", "composer install --no-interaction --no-dev --optimize-autoloader && php-fpm"]
