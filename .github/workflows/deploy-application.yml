@@ -52,9 +52,9 @@ jobs:
           script: |
             whoami
             export IMAGE_VER=${{ github.run_number }}
-            cd ~/home/gayuh_widyanata/projek_laravel
-            git checkout master
-            git pull origin master
-            docker-compose pull
-            docker-compose build 
-            docker-compose up -d      
+            cd ~/gayuh_widyanata/projek_laravel/laravel_action && \
+            git checkout master && \
+            git pull origin master && \
+            docker-compose pull && \
+            docker-compose build && \
+            docker-compose up -d
