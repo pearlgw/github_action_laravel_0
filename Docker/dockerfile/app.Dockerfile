@@ -1,4 +1,4 @@
-FROM php:8.1-fpm
+FROM php:8.2-fpm
 
 ENV HOST_GID=1000 \
     HOST_UID=1000
