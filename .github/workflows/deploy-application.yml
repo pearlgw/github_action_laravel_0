@@ -1,0 +1,60 @@
+name: Deploy Application 
+
+on:
+  push:
+    branches: ["master"]
+
+jobs:
+  build:
+    environment: master
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push app image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Docker/dockerfile/app.Dockerfile
+          push: true
+          tags: natagw1/laravel_action:${{ github.run_number }}
+      
+      - name: Build and push nginx image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Docker/dockerfile/nginx.Dockerfile
+          push: true
+          tags: natagw1/laravel_nginx_action:${{ github.run_number }}
+  
+  deployment:
+    needs: build
+    environment: master
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER }}
+          username: ${{ secrets.SERVER_USERNAME}}
+          password: ${{ secrets.SERVER_PASSWORD}}
+          port: ${{ secrets.SERVER_PORT  }}
+          script: |
+            whoami
+            export IMAGE_VER=${{ github.run_number }}
+            cd ~/home/gayuh_widyanata/projek_laravel
+            git checkout master
+            git pull origin master
+            docker compose pull
+            docker compose build 
+            docker compose up -d      
