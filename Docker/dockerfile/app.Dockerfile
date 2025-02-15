@@ -42,9 +42,6 @@ COPY . /var/www/
 # Ubah kepemilikan file
 RUN chown -R www-data:www-data /var/www
 
-# Pastikan direktori yang butuh izin dapat diakses
-RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache /var/www/vendor
-
 # Ganti user ke www-data
 USER www-data
 
@@ -52,4 +49,4 @@ USER www-data
 EXPOSE 9000
 
 # Jalankan Composer Install saat container berjalan
-CMD ["sh", "-c", "composer install --no-interaction --no-dev --optimize-autoloader && php-fpm"]
+CMD ["sh", "-c", "composer install --no-interaction --no-dev --optimize-autoloader && chmod -R 775 /var/www/storage /var/www/bootstrap/cache /var/www/vendor && php-fpm"]
